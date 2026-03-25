@@ -1,4 +1,4 @@
-# AI-Based Interview Question Generator
+# LumosAI: AI-Based Interview Question Generator
 
 ## 🚀 Overview
 This project is a web-based application that generates personalized interview questions based on:
