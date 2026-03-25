@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Question Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="bg-blur bg-blur-1"></div>
+    <div class="bg-blur bg-blur-2"></div>
+
+    <main class="page">
+        <section class="hero">
+            <div>
+                <span class="chip">AI-powered interview prep</span>
+                <h1>Interview Question Generator</h1>
+                <p class="subtitle">
+                    Upload or type your Job Description, Resume, and optional Company Description.
+                    The system analyzes everything and creates personalized interview questions.
+                </p>
+            </div>
+
+            <div class="hero-card">
+                <div class="hero-stat">
+                    <strong>3 inputs</strong>
+                    <span>JD + Resume + Company</span>
+                </div>
+                <div class="hero-stat">
+                    <strong>Text + File</strong>
+                    <span>.txt, .docx and .pdf supported</span>
+                </div>
+                <div class="hero-stat">
+                    <strong>Smart output</strong>
+                    <span>Technical, HR, Behavioral, Manager</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid">
+            <div class="panel info-panel">
+                <h2>How it works</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span>1</span>
+                        <p>Enter or upload the Job Description</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span>2</span>
+                        <p>Enter or upload the Resume</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span>3</span>
+                        <p>Add Company Description for more precise questions</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span>4</span>
+                        <p>Generate tailored interview questions instantly</p>
+                    </div>
+                </div>
+
+                <div class="note">
+                    Tip: you can type text, upload files, or use both together. The app merges them.
+                </div>
+            </div>
+
+            <div class="panel form-panel">
+                <h2>Generate Questions</h2>
+
+                {% if error %}
+                <div class="alert">{{ error }}</div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3>Job Description <span class="required">*</span></h3>
+                            <button type="button" class="link-btn" onclick="fillSample('job_description_text')">Use sample</button>
+                        </div>
+
+                        <textarea id="job_description_text" name="job_description_text" rows="6"
+                                  placeholder="Paste the job description here..."></textarea>
+
+                        <label class="file-label">
+                            <input type="file" id="jdFile" name="job_description_file" accept=".txt,.docx,.pdf"
+                                   onchange="handleFile(this, 'jdFileName', 'jdClearBtn', 'remove_job_description_file')">
+                            <span>Choose .txt, .docx, or .pdf file</span>
+                        </label>
+
+                        <input type="hidden" name="remove_job_description_file" id="remove_job_description_file" value="0">
+
+                        <div>
+                            <small id="jdFileName" class="file-name"></small>
+                            <button type="button" id="jdClearBtn"
+                                    onclick="clearFile('jdFile', 'jdFileName', 'jdClearBtn', 'remove_job_description_file')"
+                                    style="display:none;">⨯</button>
+                        </div>
+                    </div>
+
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3>Resume <span class="required">*</span></h3>
+                            <button type="button" class="link-btn" onclick="fillSample('resume_text')">Use sample</button>
+                        </div>
+
+                        <textarea id="resume_text" name="resume_text" rows="6"
+                                  placeholder="Paste the resume here..."></textarea>
+
+                        <label class="file-label">
+                            <input type="file" id="resumeFile" name="resume_file" accept=".txt,.docx,.pdf"
+                                   onchange="handleFile(this, 'resumeFileName', 'resumeClearBtn', 'remove_resume_file')">
+                            <span>Choose .txt, .docx, or .pdf file</span>
+                        </label>
+
+                        <input type="hidden" name="remove_resume_file" id="remove_resume_file" value="0">
+
+                        <div>
+                            <small id="resumeFileName" class="file-name"></small>
+                            <button type="button" id="resumeClearBtn"
+                                    onclick="clearFile('resumeFile', 'resumeFileName', 'resumeClearBtn', 'remove_resume_file')"
+                                    style="display:none;">⨯</button>
+                        </div>
+                    </div>
+
+                    <div class="input-card">
+                        <div class="input-header">
+                            <h3>Company Description <span class="optional">(optional)</span></h3>
+                            <button type="button" class="link-btn" onclick="fillSample('company_description_text')">Use sample</button>
+                        </div>
+
+                        <textarea id="company_description_text" name="company_description_text" rows="5"
+                                  placeholder="Paste company description here..."></textarea>
+
+                        <label class="file-label">
+                            <input type="file" id="companyFile" name="company_file" accept=".txt,.docx,.pdf"
+                                   onchange="handleFile(this, 'companyFileName', 'companyClearBtn', 'remove_company_file')">
+                            <span>Choose .txt, .docx, or .pdf file</span>
+                        </label>
+
+                        <input type="hidden" name="remove_company_file" id="remove_company_file" value="0">
+
+                        <div>
+                            <small id="companyFileName" class="file-name"></small>
+                            <button type="button" id="companyClearBtn"
+                                    onclick="clearFile('companyFile', 'companyFileName', 'companyClearBtn', 'remove_company_file')"
+                                    style="display:none;">⨯</button>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <div class="count-box">
+                            <label for="question_count">Number of questions</label>
+                            <select name="question_count" id="question_count">
+                                <option value="5">5</option>
+                                <option value="7">7</option>
+                                <option value="9"selected>9</option>
+                                <option value="12">12</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="primary-btn">Generate Questions</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        {% if result %}
+        <section class="panel results-panel">
+            <div class="results-top">
+                <div>
+                    <h2>Generated Output</h2>
+                    <p class="muted">Personalized for: <strong>{{ result.role }}</strong></p>
+                </div>
+                <div class="score-pill">
+                    Relevance Score <strong>{{ result.score }}%</strong>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Matched Skills</h3>
+                    <div class="tag-list">
+                        {% for item in result.common_keywords %}
+                            <span class="tag good">{{ item }}</span>
+                        {% endfor %}
+                        {% if result.common_keywords|length == 0 %}
+                            <span class="tag neutral">No direct match found</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3>Gap Areas</h3>
+                    <div class="tag-list">
+                        {% for item in result.gap_keywords %}
+                            <span class="tag warn">{{ item }}</span>
+                        {% endfor %}
+                        {% if result.gap_keywords|length == 0 %}
+                            <span class="tag neutral">No major gaps detected</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3>Company Signals</h3>
+                    <div class="tag-list">
+                        {% for item in result.company_keywords %}
+                            <span class="tag accent">{{ item }}</span>
+                        {% endfor %}
+                        {% if result.company_keywords|length == 0 %}
+                            <span class="tag neutral">Optional field not provided</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="questions-area">
+                {% for category, questions in result.questions_by_category.items() %}
+                <div class="question-block">
+                    <h3>{{ category }}</h3>
+                    <ol>
+                        {% for q in questions %}
+                        <li>{{ q }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        function handleFile(input, nameId, btnId, hiddenId) {
+            const nameEl = document.getElementById(nameId);
+            const btnEl = document.getElementById(btnId);
+            const hiddenEl = document.getElementById(hiddenId);
+
+            if (input.files && input.files.length > 0) {
+                nameEl.textContent = "Selected: " + input.files[0].name;
+                btnEl.style.display = "inline";
+                hiddenEl.value = "0";
+            } else {
+                nameEl.textContent = "";
+                btnEl.style.display = "none";
+                hiddenEl.value = "1";
+            }
+        }
+
+        function clearFile(inputId, nameId, btnId, hiddenId) {
+            document.getElementById(inputId).value = "";
+            document.getElementById(nameId).textContent = "";
+            document.getElementById(btnId).style.display = "none";
+            document.getElementById(hiddenId).value = "1";
+        }
+
+        function fillSample(targetId) {
+            const samples = {
+                job_description_text: `Job Title: Software Engineer
+
+Responsibilities:
+- Build and maintain web applications
+- Work with Python, Flask, SQL, APIs, and Git
+- Collaborate with product, design, and QA teams
+- Write clean, reusable, and testable code
+
+Requirements:
+- Strong problem-solving ability
+- Good communication and teamwork
+- Familiarity with debugging and version control
+- Ability to learn new tools quickly`,
+
+                resume_text: `Aditi Jain
+Email: aditi.jain@email.com | Phone: +91-9876543210 | LinkedIn: linkedin.com/in/aditijain
+
+PROFESSIONAL SUMMARY
+Motivated Computer Science student with hands-on experience in Python, Flask, SQL, HTML, CSS, and Git. Built academic projects involving web development, data handling, and problem solving. Strong communication, teamwork, and presentation skills.
+
+EDUCATION
+Bachelor of Engineering in Computer Science
+XYZ College of Engineering, 2022 - 2026
+CGPA: 8.6/10
+
+TECHNICAL SKILLS
+Python, Flask, SQL, HTML, CSS, JavaScript, Git, GitHub, Data Structures, Problem Solving
+
+PROJECTS
+AI Interview Question Generator
+- Built a web app to analyze job descriptions and resumes and generate personalized interview questions.
+- Used keyword matching, text extraction, and role-based question generation.
+
+Student Attendance Dashboard
+- Designed a dashboard to track attendance trends and identify low-attendance patterns.
+- Improved data visibility with clear reporting output.
+
+INTERNSHIP EXPERIENCE
+Software Development Intern
+ABC Technologies, May 2025 - July 2025
+- Assisted in building and testing internal web pages.
+- Worked with team members to fix bugs and improve UI flow.
+
+ACHIEVEMENTS
+- Participated in college-level hackathons
+- Completed online certification in Python programming`,
+
+                company_description_text: `We are a product-based company focused on building user-friendly digital solutions.
+We value teamwork, ownership, innovation, and clear communication.
+Our teams work closely across design, development, testing, and product planning.`
+            };
+
+            document.getElementById(targetId).value = samples[targetId];
+        }
+    </script>
+</body>
+</html>
